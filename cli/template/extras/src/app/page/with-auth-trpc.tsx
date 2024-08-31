@@ -16,7 +16,7 @@ export default async function Home() {
       <main className={styles.main}>
         <div className={styles.container}>
           <h1 className={styles.title}>
-            Create <span className={styles.pinkSpan}>T3</span> App
+            Neon <span className={styles.pinkSpan}>T3</span> App
           </h1>
           <div className={styles.cardRow}>
             <Link
@@ -39,6 +39,17 @@ export default async function Home() {
               <div className={styles.cardText}>
                 Learn more about Create T3 App, the libraries it uses, and how
                 to deploy it.
+              </div>
+            </Link>
+            <Link
+              className={styles.card}
+              href="https://neon.tech/docs/introduction"
+              target="_blank"
+            >
+              <h3 className={styles.cardTitle}>Visit Neon Docs →</h3>
+              <div className={styles.cardText}>
+                Serverless Postgres platform designed to help you build reliable
+                and scalable applications faster
               </div>
             </Link>
           </div>
