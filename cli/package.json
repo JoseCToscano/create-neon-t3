@@ -9,6 +9,9 @@
     "directory": "cli"
   },
   "keywords": [
+    "neon-t3",
+    "neon",
+    "serverless",
     "create-t3-app",
     "init.tips",
     "next.js",
