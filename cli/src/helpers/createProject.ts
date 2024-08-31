@@ -24,7 +24,6 @@ interface CreateProjectOptions {
   importAlias: string;
   appRouter: boolean;
   databaseProvider: DatabaseProvider;
-  drizzleDatabaseProvider: DatabaseProvider;
 }
 
 export const createProject = async ({
@@ -34,7 +33,6 @@ export const createProject = async ({
   noInstall,
   appRouter,
   databaseProvider,
-  drizzleDatabaseProvider,
 }: CreateProjectOptions) => {
   const pkgManager = getUserPkgManager();
   const projectDir = path.resolve(process.cwd(), projectName);
@@ -48,7 +46,6 @@ export const createProject = async ({
     noInstall,
     appRouter,
     databaseProvider,
-    drizzleDatabaseProvider,
   });
 
   // Install the selected packages
@@ -61,7 +58,6 @@ export const createProject = async ({
     noInstall,
     appRouter,
     databaseProvider,
-    drizzleDatabaseProvider,
   });
 
   // Select necessary _app,index / layout,page files

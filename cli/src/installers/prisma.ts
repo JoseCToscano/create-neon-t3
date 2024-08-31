@@ -6,11 +6,7 @@ import { PKG_ROOT } from "~/consts.js";
 import { type Installer } from "~/installers/index.js";
 import { addPackageDependency } from "~/utils/addPackageDependency.js";
 
-export const prismaInstaller: Installer = ({
-  projectDir,
-  packages,
-  databaseProvider,
-}) => {
+export const prismaInstaller: Installer = ({ projectDir, packages }) => {
   addPackageDependency({
     projectDir,
     dependencies: ["prisma"],
@@ -21,59 +17,30 @@ export const prismaInstaller: Installer = ({
     dependencies: ["@prisma/client"],
     devMode: false,
   });
-  if (databaseProvider === "planetscale")
-    addPackageDependency({
-      projectDir,
-      dependencies: ["@prisma/adapter-planetscale", "@planetscale/database"],
-      devMode: false,
-    });
 
-  if (databaseProvider === "neon")
-    addPackageDependency({
-      projectDir,
-      dependencies: ["@neondatabase/serverless"],
-      devMode: false,
-    });
+  addPackageDependency({
+    projectDir,
+    dependencies: ["@neondatabase/serverless"],
+    devMode: false,
+  });
 
   const extrasDir = path.join(PKG_ROOT, "template/extras");
 
   const schemaSrc = path.join(
     extrasDir,
     "prisma/schema",
-    `${packages?.nextAuth.inUse ? "with-auth" : "base"}${
-      databaseProvider === "planetscale"
-        ? "-planetscale"
-        : databaseProvider === "neon"
-          ? "-neon"
-          : ""
-    }.prisma`
+    `${packages?.nextAuth.inUse ? "with-auth" : "base"}-neon.prisma`
   );
   let schemaText = fs.readFileSync(schemaSrc, "utf-8");
-  if (databaseProvider !== "sqlite") {
-    schemaText = schemaText.replace(
-      'provider = "sqlite"',
-      `provider = "${
-        {
-          mysql: "mysql",
-          postgres: "postgresql",
-          planetscale: "mysql",
-        }[databaseProvider]
-      }"`
-    );
-    if (["mysql", "planetscale"].includes(databaseProvider)) {
-      schemaText = schemaText.replace("// @db.Text", "@db.Text");
-    }
-  }
+  schemaText = schemaText.replace(
+    'provider = "sqlite"',
+    `provider = "postgresql"`
+  );
   const schemaDest = path.join(projectDir, "prisma/schema.prisma");
   fs.mkdirSync(path.dirname(schemaDest), { recursive: true });
   fs.writeFileSync(schemaDest, schemaText);
 
-  const clientSrc = path.join(
-    extrasDir,
-    databaseProvider === "planetscale"
-      ? "src/server/db/db-prisma-planetscale.ts"
-      : "src/server/db/db-prisma.ts"
-  );
+  const clientSrc = path.join(extrasDir, "src/server/db/db-prisma.ts");
   const clientDest = path.join(projectDir, "src/server/db.ts");
 
   // add postinstall and push script to package.json

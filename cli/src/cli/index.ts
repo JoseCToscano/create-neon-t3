@@ -44,7 +44,6 @@ interface CliResults {
   packages: AvailablePackages[];
   flags: CliFlags;
   databaseProvider: DatabaseProvider;
-  drizzleDatabaseProvider: DatabaseProvider;
 }
 
 const defaultOptions: CliResults = {
@@ -62,10 +61,9 @@ const defaultOptions: CliResults = {
     nextAuth: false,
     importAlias: "~/",
     appRouter: false,
-    dbProvider: "sqlite",
+    dbProvider: "neon",
   },
-  databaseProvider: "sqlite",
-  drizzleDatabaseProvider: "sqlite",
+  databaseProvider: "neon",
 };
 
 export const runCli = async (): Promise<CliResults> => {
@@ -289,20 +287,6 @@ export const runCli = async (): Promise<CliResults> => {
             initialValue: true,
           });
         },
-        databaseProvider: ({ results }) => {
-          if (results.database === "none") return;
-          return p.select({
-            message: "What database provider would you like to use?",
-            options: [
-              { value: "sqlite", label: "SQLite (LibSQL)" },
-              { value: "mysql", label: "MySQL" },
-              { value: "postgres", label: "PostgreSQL" },
-              { value: "planetscale", label: "PlanetScale" },
-              { value: "neon", label: "Neon" },
-            ],
-            initialValue: "sqlite",
-          });
-        },
         ...(!cliResults.flags.noGit && {
           git: () => {
             return p.confirm({
@@ -345,23 +329,10 @@ export const runCli = async (): Promise<CliResults> => {
     if (project.database === "prisma") packages.push("prisma");
     if (project.database === "drizzle") packages.push("drizzle");
 
-    // Preserve the original databaseProvider for Prisma and other logic
-    const originalDatabaseProvider = project.databaseProvider;
-
-    // Map Neon to postgres and Planetscale to mysql when Drizzle is selected
-    const drizzleDatabaseProvider = (
-      originalDatabaseProvider === "neon"
-        ? "postgres"
-        : originalDatabaseProvider === "planetscale"
-          ? "mysql"
-          : originalDatabaseProvider
-    ) as DatabaseProvider;
-
     return {
       appName: project.name ?? cliResults.appName,
       packages,
-      databaseProvider:
-        (originalDatabaseProvider as DatabaseProvider) || "sqlite",
+      databaseProvider: "neon",
       flags: {
         ...cliResults.flags,
         appRouter: project.appRouter ?? cliResults.flags.appRouter,
@@ -369,7 +340,6 @@ export const runCli = async (): Promise<CliResults> => {
         noInstall: !project.install || cliResults.flags.noInstall,
         importAlias: project.importAlias ?? cliResults.flags.importAlias,
       },
-      drizzleDatabaseProvider, // Pass this separately to the Drizzle installer
     };
   } catch (err) {
     // If the user is not calling create-t3-app from an interactive terminal, inquirer will throw an IsTTYError

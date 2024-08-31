@@ -22,13 +22,7 @@ export const availablePackages = [
 ] as const;
 export type AvailablePackages = (typeof availablePackages)[number];
 
-export const databaseProviders = [
-  "mysql",
-  "postgres",
-  "sqlite",
-  "planetscale",
-  "neon",
-] as const;
+export const databaseProviders = ["neon"] as const;
 export type DatabaseProvider = (typeof databaseProviders)[number];
 
 export interface InstallerOptions {
@@ -40,7 +34,6 @@ export interface InstallerOptions {
   projectName: string;
   scopedAppName: string;
   databaseProvider: DatabaseProvider;
-  drizzleDatabaseProvider: DatabaseProvider;
 }
 
 export type Installer = (opts: InstallerOptions) => void;

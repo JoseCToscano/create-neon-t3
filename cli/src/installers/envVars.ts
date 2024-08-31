@@ -2,38 +2,21 @@ import path from "path";
 import fs from "fs-extra";
 
 import { PKG_ROOT } from "~/consts.js";
-import { type DatabaseProvider, type Installer } from "~/installers/index.js";
+import { type Installer } from "~/installers/index.js";
 
-export const envVariablesInstaller: Installer = ({
-  projectDir,
-  packages,
-  databaseProvider,
-  scopedAppName,
-}) => {
+export const envVariablesInstaller: Installer = ({ projectDir, packages }) => {
   const usingAuth = packages?.nextAuth.inUse;
   const usingPrisma = packages?.prisma.inUse;
   const usingDrizzle = packages?.drizzle.inUse;
 
   const usingDb = usingPrisma || usingDrizzle;
-  const usingPlanetScale = databaseProvider === "planetscale";
 
-  const envContent = getEnvContent(
-    !!usingAuth,
-    !!usingPrisma,
-    !!usingDrizzle,
-    databaseProvider,
-    scopedAppName
-  );
+  const envContent = getEnvContent(!!usingAuth, !!usingPrisma, !!usingDrizzle);
 
   let envFile = "";
   if (usingDb) {
-    if (usingPlanetScale) {
-      if (usingAuth) envFile = "with-auth-db-planetscale.js";
-      else envFile = "with-db-planetscale.js";
-    } else {
-      if (usingAuth) envFile = "with-auth-db.js";
-      else envFile = "with-db.js";
-    }
+    if (usingAuth) envFile = "with-auth-db.js";
+    else envFile = "with-db.js";
   } else {
     if (usingAuth) envFile = "with-auth.js";
   }
@@ -58,9 +41,7 @@ export const envVariablesInstaller: Installer = ({
 const getEnvContent = (
   usingAuth: boolean,
   usingPrisma: boolean,
-  usingDrizzle: boolean,
-  databaseProvider: DatabaseProvider,
-  scopedAppName: string
+  usingDrizzle: boolean
 ) => {
   let content = `
 # When adding additional environment variables, the schema in "/src/env.js"
@@ -78,26 +59,9 @@ const getEnvContent = (
   if (usingDrizzle) content += "\n# Drizzle\n";
 
   if (usingPrisma || usingDrizzle) {
-    if (databaseProvider === "planetscale") {
-      if (usingDrizzle) {
-        content += `# Get the Database URL from the "prisma" dropdown selector in PlanetScale. 
-# Change the query params at the end of the URL to "?ssl={"rejectUnauthorized":true}"
-DATABASE_URL='mysql://YOUR_MYSQL_URL_HERE?ssl={"rejectUnauthorized":true}'`;
-      } else {
-        content = `# Get the Database URL from the "prisma" dropdown selector in PlanetScale. 
-DATABASE_URL='mysql://YOUR_MYSQL_URL_HERE?sslaccept=strict'`;
-      }
-    } else if (databaseProvider === "neon") {
-      content += `# Get the database connection details from the Connection Details widget on the Neon Dashboard.
+    content += `# Get the database connection details from the Connection Details widget on the Neon Dashboard.
 # Select a branch, a compute, a database, and a role. A connection string is constructed for you
 DATABASE_URL="postgresql://YOUR_POSTGRES_CONNECTION_STRING_HERE?sslmode=require"`;
-    } else if (databaseProvider === "mysql") {
-      content += `DATABASE_URL="mysql://root:password@localhost:3306/${scopedAppName}"`;
-    } else if (databaseProvider === "postgres") {
-      content += `DATABASE_URL="postgresql://postgres:password@localhost:5432/${scopedAppName}"`;
-    } else if (databaseProvider === "sqlite") {
-      content += 'DATABASE_URL="file:./db.sqlite"';
-    }
     content += "\n";
   }
 
