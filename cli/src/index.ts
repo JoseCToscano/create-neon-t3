@@ -16,10 +16,7 @@ import { parseNameAndPath } from "~/utils/parseNameAndPath.js";
 import { renderTitle } from "~/utils/renderTitle.js";
 import { installDependencies } from "./helpers/installDependencies.js";
 import { getVersion } from "./utils/getT3Version.js";
-import {
-  getNpmVersion,
-  renderVersionWarning,
-} from "./utils/renderVersionWarning.js";
+import { getNpmVersion } from "./utils/renderVersionWarning.js";
 
 type CT3APackageJSON = PackageJson & {
   ct3aMetadata?: {
@@ -28,12 +25,9 @@ type CT3APackageJSON = PackageJson & {
 };
 
 const main = async () => {
-  const npmVersion = await getNpmVersion();
+  await getNpmVersion();
   const pkgManager = getUserPkgManager();
   renderTitle();
-  if (npmVersion) {
-    renderVersionWarning(npmVersion);
-  }
 
   const {
     appName,
